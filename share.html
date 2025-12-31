@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>A Quiet Kind of Love</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Playfair+Display:ital@1&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --black: #08070d;
+            --wine: #1a1025;
+            --rose: #c9184a;
+            --gold: #e6b89c;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Inter, system-ui, sans-serif;
+            background:
+                radial-gradient(circle at top, #241533, var(--black));
+            color: rgba(255, 255, 255, .88);
+            overflow: hidden;
+        }
+
+        .page {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-content: center;
+            padding: 2rem;
+            text-align: center;
+            transition:
+                opacity .7s ease,
+                transform .7s ease;
+        }
+
+        .page.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(30px);
+        }
+
+        h1,
+        h2 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        em {
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            color: var(--rose);
+        }
+
+        p {
+            opacity: .55;
+            max-width: 520px;
+            margin: 1rem auto 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, .05);
+            backdrop-filter: blur(26px);
+            border-radius: 26px;
+            padding: 2rem;
+            max-width: 420px;
+            margin: auto;
+            box-shadow:
+                0 30px 80px rgba(201, 24, 74, .25);
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, .25);
+            padding: 14px;
+            color: white;
+            margin-bottom: 1.2rem;
+            font-size: 1rem;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, .4);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            border-radius: 999px;
+            border: none;
+            background:
+                linear-gradient(135deg, var(--rose), var(--gold));
+            font-weight: 600;
+            cursor: pointer;
+            color: #000;
+        }
+
+        .story-text {
+            font-family: "Playfair Display", serif;
+            font-style: italic;
+            font-size: 1.4rem;
+            max-width: 520px;
+            margin: auto;
+        }
+
+        .controls {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .controls button {
+            width: auto;
+            padding: 12px 22px;
+        }
+
+        .story-frame {
+            width: 360px;
+            height: 640px;
+            border-radius: 32px;
+            background:
+                radial-gradient(circle at top,
+                    rgba(201, 24, 74, .85),
+                    var(--black));
+            display: grid;
+            place-content: center;
+            padding: 2rem;
+            margin: auto;
+        }
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="bg"></canvas>
+
+    <!-- PAGE 1 -->
+    <section class="page" id="page1">
+        <h1>
+            A new year.<br>
+            <em>A quieter beginning.</em>
+        </h1>
+
+        <p>Some moments are meant to be personal.</p>
+
+        <div class="card">
+            <input id="nameInput" placeholder="Your name">
+            <textarea id="msgInput" placeholder="Write something honest You expect from Me..."></textarea>
+            <button id="startBtn">Begin</button>
+        </div>
+    </section>
+
+    <!-- PAGE 2 -->
+    <section class="page hidden" id="page2">
+        <h2 id="lineTo"></h2>
+        <p class="story-text" id="lineText"></p>
+
+        <div class="controls">
+            <button id="nextBtn">Next</button>
+        </div>
+    </section>
+
+    <!-- PAGE 3 -->
+    <section class="page hidden" id="page3">
+        <div class="story-frame" id="exportArea">
+            <h2 id="finalTo"></h2>
+            <p class="story-text" id="finalMsg"></p>
+        </div>
+
+        <div class="controls">
+            <button id="exportBtn">Export 📸</button>
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+
+    <script>
+        /* ---------- STATE ---------- */
+        const pages = [
+            document.getElementById("page1"),
+            document.getElementById("page2"),
+            document.getElementById("page3")
+        ];
+
+        let step = 0;
+        let person = "", message = "";
+
+        /* ---------- NAV ---------- */
+        function show(i) {
+            pages.forEach(p => p.classList.add("hidden"));
+            pages[i].classList.remove("hidden");
+        }
+
+        startBtn.onclick = () => {
+            person = nameInput.value || "You";
+            message = msgInput.value || "This year, may you feel deeply loved.";
+
+            lineTo.innerHTML = `For <em>${person}</em>.`;
+            lineText.innerText = "Some connections don’t need noise to be felt.";
+
+            show(1);
+            pulseHeart();
+        };
+
+        nextBtn.onclick = () => {
+            if (step === 0) {
+                lineText.innerText = "They simply exist — steady, warm, and real.";
+                step++;
+            } else {
+                finalTo.innerText = `Always, ${person}.`;
+                finalMsg.innerText = message;
+                show(2);
+            }
+        };
+
+        exportBtn.onclick = () => {
+            html2canvas(exportArea).then(c => {
+                const a = document.createElement("a");
+                a.href = c.toDataURL("image/png");
+                a.download = "New-Year.png";
+                a.click();
+            });
+        };
+
+        /* ---------- THREE.JS HEART ---------- */
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
+        camera.position.z = 8;
+
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById("bg"),
+            alpha: true,
+            antialias: true
+        });
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.setPixelRatio(devicePixelRatio);
+
+        const count = 2200;
+        const geo = new THREE.BufferGeometry();
+        const pos = new Float32Array(count * 3);
+
+        for (let i = 0; i < count; i++) {
+            const t = Math.random() * Math.PI * 2;
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+            pos[i * 3] = x * 0.05 + (Math.random() - .5) * .25;
+            pos[i * 3 + 1] = y * 0.05 + (Math.random() - .5) * .25;
+            pos[i * 3 + 2] = (Math.random() - .5) * 2;
+        }
+
+        geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+
+        const mat = new THREE.PointsMaterial({
+            size: .045,
+            color: 0xc9184a,
+            transparent: true,
+            opacity: .85
+        });
+
+        const heart = new THREE.Points(geo, mat);
+        scene.add(heart);
+
+        function animate() {
+            heart.rotation.y += .0006;
+            heart.rotation.x += .0003;
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        function pulseHeart() {
+            mat.size = .075;
+            mat.color.set(0xe6b89c);
+            setTimeout(() => {
+                mat.size = .045;
+                mat.color.set(0xc9184a);
+            }, 600);
+        }
+
+        /* ---------- RESIZE ---------- */
+        addEventListener("resize", () => {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+        });
+    </script>
+</body>
+
+</html>
